@@ -93,12 +93,68 @@ static ssize_t my_write(struct file *filp, const char __user *buf, size_t count,
 	return count;
 }
 
+static long my_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	int ret = 0, size = 0;
+	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
+	pr_info("[%s] %s() cmd:%u\n", __FILE__, __FUNCTION__, cmd);
+	if (_IOC_TYPE(cmd) != MYDEV_IOCTL_MAGIC)
+	{
+		pr_info("[%s] %s():%d invalid magic number\n", __FILE__, __FUNCTION__, __LINE__);
+		return -EINVAL;
+	}
+	if (_IOC_NR(cmd) >= MYDEV_IOCTL_MAX_NR)
+	{
+		pr_info("[%s] %s():%d exceeded max value of cmd\n", __FILE__, __FUNCTION__, __LINE__);
+		return -EINVAL;
+	}
+	if ((size = _IOC_SIZE(cmd)))
+	{
+		if (_IOC_DIR(cmd) & _IOC_READ)
+		{
+			ret = !access_ok(VERIFY_WRITE, (void __user*)arg, size);
+		}
+		else if (_IOC_DIR(cmd) & _IOC_WRITE)
+		{
+			ret = !access_ok(VERIFY_READ, (void __user*)arg, size);
+		}
+		if (ret)
+		{
+			return ret;
+		}
+	}
+	switch (cmd)
+	{
+		case MYDEV_IOCTL_INIT:
+			pr_info("[%s] %s() MYDEV_IOCTL_INIT\n", __FILE__, __FUNCTION__);
+			break;
+		case MYDEV_IOCTL_DEINIT:
+			pr_info("[%s] %s() MYDEV_IOCTL_DEINIT\n", __FILE__, __FUNCTION__);
+			break;
+		case MYDEV_IOCTL_READ:
+			pr_info("[%s] %s() MYDEV_IOCTL_READ\n", __FILE__, __FUNCTION__);
+			break;
+		case MYDEV_IOCTL_WRITE:
+			pr_info("[%s] %s() MYDEV_IOCTL_WRITE\n", __FILE__, __FUNCTION__);
+			break;
+		case MYDEV_IOCTL_RDWR:
+			pr_info("[%s] %s() MYDEV_IOCTL_RDWR\n", __FILE__, __FUNCTION__);
+			break;
+		default:
+			pr_info("[%s] %s():%d unregistered cmd\n", __FILE__, __FUNCTION__, __LINE__);
+			ret = -EINVAL;
+			break;
+	}
+	return ret;
+}
+
 static struct file_operations my_fops = {
-	.owner		= THIS_MODULE,
-	.open		= my_open,
-	.release	= my_release,
-	.read		= my_read,
-	.write		= my_write,
+	.owner			= THIS_MODULE,
+	.open			= my_open,
+	.release		= my_release,
+	.read			= my_read,
+	.write			= my_write,
+	.unlocked_ioctl = my_ioctl,
 };
 
 static int __init my_init(void)
