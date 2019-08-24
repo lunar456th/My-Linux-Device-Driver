@@ -26,6 +26,7 @@ static unsigned int		my_major;
 static struct cdev		my_cdev;
 static struct class		*my_class = NULL;
 static dev_t			my_dev;
+static char				*buffer;
 
 struct data {
 	unsigned char buffer[BUFFER_SIZE];
@@ -33,26 +34,63 @@ struct data {
 
 static int my_open(struct inode *inode, struct file *filp)
 {
+	char *str = "null";
+	int ret = 0;
+	struct data *p = kmalloc(sizeof(struct data), GFP_KERNEL);
 	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
+	if (!p)
+	{
+		pr_info("[%s] %s():%d kmalloc null (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
+		return -ENOMEM;
+	}
+	ret = strlcpy(p->buffer, str, sizeof(p->buffer));
+	if (ret > strlen(str))
+	{
+		pr_info("[%s] %s():%d strlcpy too long (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
+	}
+	filp->private_data = p;
 	return 0;
 }
 
 static int my_release(struct inode *inode, struct file *filp)
 {
 	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
+	if (filp->private_data)
+	{
+		kfree(filp->private_data);
+		filp->private_data = NULL;
+	}
+	kfree(buffer);
 	return 0;
 }
 
-static ssize_t my_read(struct file *filp, char *buf, size_t count, loff_t *f_pos)
+static ssize_t my_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
 	int ret = 0;
-	return ret;
+	struct data *p = filp->private_data;
+	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
+	count = (count > BUFFER_SIZE) ? BUFFER_SIZE : count;
+	if ((ret = copy_to_user(buf, p->buffer, count)) < 0)
+	{
+		pr_info("[%s] %s():%d copy_to_user failed (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
+		return -EFAULT;
+	}
+	return count;
 }
 
-static ssize_t my_write(struct file *filp, const char *buf, size_t count, loff_t *f_pos)
+static ssize_t my_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
 {
 	int ret = 0;
-	return ret;
+	struct data *p = filp->private_data;
+	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
+	pr_info("[%s] %s() copy_from_user() Before (0x%p,%s)\n", __FILE__, __FUNCTION__, p->buffer, p->buffer);
+	if ((ret = copy_from_user(p->buffer, buf, count)) < 0)
+	{
+		pr_info("[%s] %s():%d copy_from_user failed (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
+		return -EFAULT;
+	}
+	pr_info("[%s] %s() copy_from_user() After  (0x%p,%s)\n", __FILE__, __FUNCTION__, p->buffer, p->buffer);
+	return count;
 }
 
 static struct file_operations my_fops = {

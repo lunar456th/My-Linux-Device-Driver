@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define TEXT_LEN 12
+#define TEXT_LEN 14
 
 int main()
 {
@@ -17,19 +17,19 @@ int main()
 		return -1;
 	}
 
-//	if ((ret = write(fd, "lazenca0x0", TEXT_LEN)) < 0)
-//	{
-//		fprintf(stderr, "write failed (%d)\n", ret);
-//	}
+	if ((ret = write(fd, "Hello World!", TEXT_LEN)) < 0)
+	{
+		fprintf(stderr, "write failed (%d)\n", ret);
+	}
 
-//	if ((ret = read(fd, buff, TEXT_LEN)) < 0)
-//	{
-//		fprintf(stderr, "read failed (%d)\n", ret);
-//	}
-//	else
-//	{
-//		printf("%read (%d,%s)\n", ret, buff);
-//	}
+	if ((ret = read(fd, buff, TEXT_LEN)) < 0)
+	{
+		fprintf(stderr, "read failed (%d)\n", ret);
+	}
+	else
+	{
+		printf("read -> (ret:%d,buff:%s)\n", ret, buff);
+	}
 
 	if ((ret = close(fd)) < 0)
 	{
