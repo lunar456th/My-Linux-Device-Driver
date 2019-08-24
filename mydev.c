@@ -28,7 +28,7 @@ static struct class		*my_class = NULL;
 static dev_t			my_dev;
 
 struct data {
-    unsigned char buffer[BUFFER_SIZE];
+	unsigned char buffer[BUFFER_SIZE];
 };
 
 static int my_open(struct inode *inode, struct file *filp)
@@ -75,31 +75,31 @@ static int __init my_init(void)
 	}
 
 	my_major = MAJOR(my_dev);
-    my_dev = MKDEV(my_major, MINOR_BASE);
-    cdev_init(&my_cdev, &my_fops);
-    my_cdev.owner = THIS_MODULE;
+	my_dev = MKDEV(my_major, MINOR_BASE);
+	cdev_init(&my_cdev, &my_fops);
+	my_cdev.owner = THIS_MODULE;
 	if ((ret = cdev_add(&my_cdev, my_dev, MINOR_NUM)) < 0)
 	{
 		pr_info("[%s] %s():%d alloc_chrdev_region failed (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
 		unregister_chrdev_region(my_dev, MINOR_NUM);
 		return -EINVAL;
 	}
-    my_class = class_create(THIS_MODULE, "mydev");
-    if ((ret = IS_ERR(my_class)))
+	my_class = class_create(THIS_MODULE, "mydev");
+	if ((ret = IS_ERR(my_class)))
 	{
 		pr_info("[%s] %s():%d class_create failed (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
-        cdev_del(&my_cdev);
-        unregister_chrdev_region(my_dev, MINOR_NUM);
-        return -EINVAL;
-    }
-    for (minor = MINOR_BASE; minor < MINOR_BASE + MINOR_NUM; minor++)
+		cdev_del(&my_cdev);
+		unregister_chrdev_region(my_dev, MINOR_NUM);
+		return -EINVAL;
+	}
+	for (minor = MINOR_BASE; minor < MINOR_BASE + MINOR_NUM; minor++)
 	{
-        if (!device_create(my_class, NULL, MKDEV(my_major, minor), NULL, "mydev%d", minor))
+		if (!device_create(my_class, NULL, MKDEV(my_major, minor), NULL, "mydev%d", minor))
 		{
 			pr_info("[%s] %s():%d device_create failed\n", __FILE__, __FUNCTION__, __LINE__);
 			return -EINVAL;
 		}
-    }
+	}
 
 	return ret;
 }
@@ -112,9 +112,9 @@ void __exit my_exit(void)
 	{
 		device_destroy(my_class, MKDEV(my_major, minor));
 	}
-    class_destroy(my_class);
-    cdev_del(&my_cdev);
-    unregister_chrdev_region(my_dev, MINOR_NUM);
+	class_destroy(my_class);
+	cdev_del(&my_cdev);
+	unregister_chrdev_region(my_dev, MINOR_NUM);
 }
 
 module_init(my_init);

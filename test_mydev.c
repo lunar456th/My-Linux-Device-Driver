@@ -3,25 +3,25 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
- 
+
 #define TEXT_LEN 12
- 
+
 int main()
 {
 	static char buff[256];
 	int fd = 0, ret = 0;
- 
+
 	if ((fd = open("/dev/mydev0", O_RDWR)) < 0)
 	{
 		fprintf(stderr, "open failed (%d)\n", fd);
 		return -1;
 	}
- 
+
 //	if ((ret = write(fd, "lazenca0x0", TEXT_LEN)) < 0)
 //	{
 //		fprintf(stderr, "write failed (%d)\n", ret);
 //	}
- 
+
 //	if ((ret = read(fd, buff, TEXT_LEN)) < 0)
 //	{
 //		fprintf(stderr, "read failed (%d)\n", ret);
@@ -30,7 +30,7 @@ int main()
 //	{
 //		printf("%read (%d,%s)\n", ret, buff);
 //	}
- 
+
 	if ((ret = close(fd)) < 0)
 	{
 		fprintf(stderr, "close failed (%d)\n", ret);
