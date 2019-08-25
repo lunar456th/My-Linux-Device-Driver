@@ -29,7 +29,7 @@ int main()
 	}
 	
 	// munmap
-	if ((ret = mnumap(memory)) < 0)
+	if ((ret = munmap(memory, PAGE_SIZE)) < 0)
 	{
 		fprintf(stderr, "munmap failed (%d)\n", ret);
 		return -1;

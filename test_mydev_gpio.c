@@ -6,14 +6,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
-#include "mydev.h"
+#include "mydev_gpio.h"
 
 #define PAGE_SIZE 4096
-
-#define GPIO_BASE 0x3F200000
-#define GPFSEL1 0x04
-#define GPSET0 0x1C
-#define GPCLR0 0x28
 
 int main()
 {
@@ -36,18 +31,20 @@ int main()
 	}
 
 	// gpio 18 LED blink 5 times
-	volatile unsigned int *gpio = (volatile unsigned int *)memory;
-	gpio[GPFSEL1/4] = (1 << 24);
+	gpio = (volatile unsigned int *)memory;
+	GPIO_OUT(18);
 	for (int i = 0; i < 5; i++)
 	{
-		gpio[GPSET0/4] |= (1 << 18);
+		GPIO_SET(18);
+		printf("GPIO_SET(%d)\n", 18);
 		sleep(1);
-		gpio[GPCLR0/4] |= (1 << 18);
+		GPIO_CLR(18);
+		printf("GPIO_CLR(%d)\n", 18);
 		sleep(1);
 	}
 
 	// munmap
-	if ((ret = mnumap(memory)) < 0)
+	if ((ret = munmap(memory, PAGE_SIZE)) < 0)
 	{
 		fprintf(stderr, "munmap failed (%d)\n", ret);
 		return -1;

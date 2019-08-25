@@ -15,6 +15,7 @@ test:
 
 testclean:
 	rm test_$(NAME)
+	rm test_$(NAME)_gpio
 
 clean:
 	rm -f $(NAME).o
