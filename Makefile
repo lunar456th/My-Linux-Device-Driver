@@ -11,6 +11,7 @@ all:
 
 test:
 	gcc -o test_$(NAME) test_$(NAME).c
+	gcc -o test_$(NAME)_gpio test_$(NAME)_gpio.c
 
 testclean:
 	rm test_$(NAME)
