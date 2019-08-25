@@ -7,12 +7,28 @@
 #include <asm-generic/bitsperlong.h>
 #include <linux/miscdevice.h>
 #include <linux/mutex.h>
-
 #include "mydev.h"
 
-#define DEV_MAJOR_NUM 240
-#define DEV_MINOR_NUM 0
+#define DEV_MINOR_NUM 242
 #define DEV_NAME "mydev"
+
+#define BUFF_SIZE 1024
+
+static int	my_open(struct inode *, struct file *);
+static int	my_release(struct inode *, struct file *);
+
+static struct file_operations my_fops = {
+	.owner		= THIS_MODULE,
+	.open		= my_open,
+	.release	= my_release,
+};
+
+static struct miscdevice my_misc = {
+	.minor		= DEV_MINOR_NUM,
+	.name		= DEV_NAME,
+	.fops		= &my_fops,
+	.mode		= 0777,
+};
 
 static int my_open(struct inode *inode, struct file *filp)
 {
@@ -26,28 +42,22 @@ static int my_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-static struct file_operations my_fops = {
-	.owner		= THIS_MODULE,
-	.open		= my_open,
-	.release	= my_release,
-};
-
 static int __init my_init(void)
 {
 	int ret = 0;
 	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
-	if ((ret = register_chrdev(DEV_MAJOR_NUM, DEV_NAME, &my_fops)) < 0)
+	if ((ret = misc_register(&my_misc)) < 0)
 	{
-		pr_info("[%s] %s():%d register_chrdev failed (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
-		return ret;
+		pr_info("[%s] %s():%d misc_register failed (%d)\n", __FILE__, __FUNCTION__, __LINE__, ret);
+		return -EINVAL;
 	}
-	return ret;
+	return 0;
 }
 
 void __exit my_exit(void)
 {
 	pr_info("[%s] %s()\n", __FILE__, __FUNCTION__);
-	unregister_chrdev(DEV_MAJOR_NUM, DEV_NAME);
+	misc_deregister(&my_misc);
 }
 
 module_init(my_init);
