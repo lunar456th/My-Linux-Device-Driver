@@ -19,13 +19,12 @@ static unsigned int			my_major;
 static struct cdev			my_cdev;
 static struct class			*my_class = NULL;
 static dev_t				my_dev;
-static char					*buffer;
 
-static int		my_open(struct inode *inode, struct file *filp);
-static int		my_release(struct inode *inode, struct file *filp);
-static ssize_t	my_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos);
-static ssize_t	my_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos);
-static long		my_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
+static int		my_open(struct inode *, struct file *);
+static int		my_release(struct inode *, struct file *);
+static ssize_t	my_read(struct file *, char *, size_t, loff_t *);
+static ssize_t	my_write(struct file *, const char *, size_t, loff_t *);
+static long		my_ioctl(struct file *, unsigned int, unsigned long);
 
 static struct file_operations my_fops = {
 	.owner			= THIS_MODULE,
@@ -120,7 +119,6 @@ static int my_release(struct inode *inode, struct file *filp)
 		kfree(filp->private_data);
 		filp->private_data = NULL;
 	}
-	kfree(buffer);
 	return 0;
 }
 
