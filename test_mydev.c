@@ -3,14 +3,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/ioctl.h>
+#include <sys/mman.h>
 #include "mydev.h"
 
-#define TEXT_LEN 14
+#define PAGE_SIZE 4096
 
 int main()
 {
-	static char buff[256];
+	char *memory = NULL;
 	int fd = 0, ret = 0;
 
 	// open
@@ -20,48 +20,26 @@ int main()
 		return -1;
 	}
 
-	// write
-	if ((ret = write(fd, "Hello World!", TEXT_LEN)) < 0)
+	// mmap
+	memory = (char*)mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	if (!memory)
 	{
-		fprintf(stderr, "write failed (%d)\n", ret);
+		fprintf(stderr, "mmap null\n");
+		return -1;
 	}
-
-	// read
-	if ((ret = read(fd, buff, TEXT_LEN)) < 0)
+	
+	// munmap
+	if ((ret = mnumap(memory)) < 0)
 	{
-		fprintf(stderr, "read failed (%d)\n", ret);
-	}
-	else
-	{
-		printf("read -> (ret:%d,buff:%s)\n", ret, buff);
-	}
-
-	// ioctl
-	if ((ret = ioctl(fd, MYDEV_IOCTL_INIT)) < 0)
-	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_INIT failed (%d)\n", ret);
-	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_DEINIT)) < 0)
-	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_DEINIT failed (%d)\n", ret);
-	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_READ)) < 0)
-	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_READ failed (%d)\n", ret);
-	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_WRITE)) < 0)
-	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_WRITE failed (%d)\n", ret);
-	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_RDWR)) < 0)
-	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_RDWR failed (%d)\n", ret);
+		fprintf(stderr, "munmap failed (%d)\n", ret);
+		return -1;
 	}
 
 	// release
 	if ((ret = close(fd)) < 0)
 	{
 		fprintf(stderr, "close failed (%d)\n", ret);
+		return -1;
 	}
 
 	return 0;
