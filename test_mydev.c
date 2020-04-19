@@ -1,68 +1,83 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-#include "mydev.h"
+#include "libmydev.h"
 
-#define TEXT_LEN 14
+#include <stdio.h>
+#include <unistd.h>
 
 int main()
 {
-	static char buff[256];
-	int fd = 0, ret = 0;
+    int ret = 0;
 
-	// open
-	if ((fd = open("/dev/mydev0", O_RDWR)) < 0)
+    // MYDEV_write
+	if ((ret = MYDEV_write()) < 0)
 	{
-		fprintf(stderr, "open failed (%d)\n", fd);
-		return -1;
-	}
-
-	// write
-	if ((ret = write(fd, "Hello World!", TEXT_LEN)) < 0)
-	{
-		fprintf(stderr, "write failed (%d)\n", ret);
-	}
-
-	// read
-	if ((ret = read(fd, buff, TEXT_LEN)) < 0)
-	{
-		fprintf(stderr, "read failed (%d)\n", ret);
+		fprintf(stderr, "MYDEV_write failed (%d)\n", ret);
 	}
 	else
 	{
-		printf("read -> (ret:%d,buff:%s)\n", ret, buff);
+		printf("MYDEV_write success\n");
 	}
 
-	// ioctl
-	if ((ret = ioctl(fd, MYDEV_IOCTL_INIT)) < 0)
+    // MYDEV_read
+	if ((ret = MYDEV_read()) < 0)
 	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_INIT failed (%d)\n", ret);
+		fprintf(stderr, "MYDEV_read failed (%d)\n", ret);
 	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_DEINIT)) < 0)
+	else
 	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_DEINIT failed (%d)\n", ret);
+		printf("MYDEV_read success\n");
 	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_READ)) < 0)
+    usleep(1000 * 1000);
+
+    // MYDEV_ioctl_init
+	if ((ret = MYDEV_ioctl_init()) < 0)
 	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_READ failed (%d)\n", ret);
+		fprintf(stderr, "MYDEV_ioctl_init failed (%d)\n", ret);
 	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_WRITE)) < 0)
+	else
 	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_WRITE failed (%d)\n", ret);
-	}
-	if ((ret = ioctl(fd, MYDEV_IOCTL_RDWR)) < 0)
-	{
-		fprintf(stderr, "ioctl MYDEV_IOCTL_RDWR failed (%d)\n", ret);
+		printf("MYDEV_ioctl_init success\n");
 	}
 
-	// release
-	if ((ret = close(fd)) < 0)
+    // MYDEV_ioctl_deinit
+	if ((ret = MYDEV_ioctl_deinit()) < 0)
 	{
-		fprintf(stderr, "close failed (%d)\n", ret);
+		fprintf(stderr, "MYDEV_ioctl_deinit failed (%d)\n", ret);
+	}
+	else
+	{
+		printf("MYDEV_ioctl_deinit success\n");
+	}
+
+    // MYDEV_ioctl_read
+	if ((ret = MYDEV_ioctl_read()) < 0)
+	{
+		fprintf(stderr, "MYDEV_ioctl_read failed (%d)\n", ret);
+	}
+	else
+	{
+		printf("MYDEV_ioctl_read success\n");
+	}
+
+    // MYDEV_ioctl_write
+	if ((ret = MYDEV_ioctl_write()) < 0)
+	{
+		fprintf(stderr, "MYDEV_ioctl_write failed (%d)\n", ret);
+	}
+	else
+	{
+		printf("MYDEV_ioctl_write success\n");
+	}
+
+    // MYDEV_ioctl_rdwr
+	if ((ret = MYDEV_ioctl_rdwr()) < 0)
+	{
+		fprintf(stderr, "MYDEV_ioctl_rdwr failed (%d)\n", ret);
+	}
+	else
+	{
+		printf("MYDEV_ioctl_rdwr success\n");
 	}
 
 	return 0;
 }
+

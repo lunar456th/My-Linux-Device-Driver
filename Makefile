@@ -9,11 +9,21 @@ LOCAL := $(shell pwd)
 all:
 	make -C /lib/modules/$(VERSION)/build M=$(LOCAL) modules
 
+lib:
+	gcc -fPIC -c -o lib$(NAME).o lib$(NAME).c
+	gcc -shared -Wl,-soname,lib$(NAME).so.1 -o lib$(NAME).so.1.0.0 lib$(NAME).o -lc
+	ln -s lib$(NAME).so.1.0.0 lib$(NAME).so
+	ln -s lib$(NAME).so.1.0.0 lib$(NAME).so.1
+    
 test:
-	gcc -o test_$(NAME) test_$(NAME).c
+	gcc -o test_$(NAME) test_$(NAME).c -L. -lmydev
 
 testclean:
-	rm test_$(NAME)
+	rm -f test_$(NAME)
+
+libclean:
+	rm -f lib$(NAME).o
+	rm -f lib$(NAME).so*
 
 clean:
 	rm -f $(NAME).o
